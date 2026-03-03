@@ -1,0 +1,56 @@
+services:
+  mysql-db:
+    image: mysql:latest
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root123 # Contraseña del usuario root
+      MYSQL_DATABASE: testdb       # Base de datos inicial
+      MYSQL_USER: user123          # Usuario adicional
+      MYSQL_PASSWORD: user123pwd   # Contraseña para el usuario adicional
+      TZ: "Europe/Madrid" # Ajusta la zona horaria que necesites
+
+    ports:
+      - "3306:3306" # Puerto de MySQL
+    volumes:
+      - mysql-data:/var/lib/mysql  # Volumen para persistir los datos
+      - /etc/localtime:/etc/localtime:ro # Monta la hora local del sistema anfitrión
+      - /etc/timezone:/etc/timezone:ro   # Monta la zona horaria del sistema anfitrión
+    networks:
+      - mysql-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin-container
+    environment:
+      PMA_HOST: mysql-db           # Nombre del servicio MySQL al que se conectará
+      PMA_PORT: 3306               # Puerto del servicio MySQL
+      PMA_USER: root               # Usuario para la conexión inicial (puedes cambiarlo)
+      PMA_PASSWORD: root123        # Contraseña para el usuario
+    ports:
+      - "8080:80"                  # Exponemos phpMyAdmin en el puerto 8080
+    depends_on:
+      - mysql-db                   # phpMyAdmin depende del servicio MySQL
+    networks:
+      - mysql-network
+
+networks:
+  mysql-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+
+
+# Levantar los servidores
+# docker-compose -f mysql-composer.yaml up -d
+# verficar los contendores:
+# docker ps
+# abrir el navedador y acceder a phpmyadmin
+# http://localhost:8080
+
+# detener los servicios
+# docker-compose -f mysql-composer.yaml down
+
+# reinciio de los servicios
+# docker-compose -f mysql-composer.yaml up -d
